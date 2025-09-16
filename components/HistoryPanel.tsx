@@ -28,7 +28,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ history, onSelectItem, onCl
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-3">
           <HistoryIcon className="w-6 h-6 text-slate-600 dark:text-slate-300"/>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">{t.title}</h2>
+          <h2 className="text-xl font-extrabold text-slate-800 dark:text-slate-100">{t.title}</h2>
         </div>
         {history.length > 0 && (
             <button 

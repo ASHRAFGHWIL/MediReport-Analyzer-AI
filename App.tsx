@@ -163,8 +163,8 @@ const App: React.FC = () => {
       </header>
       
       <main className="container mx-auto p-4 md:p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="flex flex-col gap-8">
+          <div className="space-y-6">
             <FileUpload 
               onFileUpload={handleFileUpload} 
               isLoading={isLoading} 
@@ -180,13 +180,18 @@ const App: React.FC = () => {
             { (isLoading || analysisResult) && 
               <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
                 {currentFile && <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Showing results for: <span className="font-medium text-slate-700 dark:text-slate-200">{currentFile.name}</span></p>}
-                <AnalysisDisplay isLoading={isLoading} analysisResult={analysisResult} language={language} />
+                <AnalysisDisplay 
+                  isLoading={isLoading} 
+                  analysisResult={analysisResult} 
+                  language={language} 
+                  fileName={currentFile?.name || 'report.pdf'}
+                />
               </div>
             }
             <Disclaimer language={language} />
           </div>
 
-          <div className="lg:col-span-1">
+          <div>
             <HistoryPanel 
               history={history}
               onSelectItem={handleSelectItemFromHistory}

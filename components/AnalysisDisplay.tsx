@@ -9,11 +9,12 @@ interface AnalysisDisplayProps {
   isLoading: boolean;
   analysisResult: AnalysisResult | null;
   language: Language;
+  fileName: string;
 }
 
 type ActiveTab = 'patient' | 'doctor';
 
-const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ isLoading, analysisResult, language }) => {
+const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ isLoading, analysisResult, language, fileName }) => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('patient');
   const t = translations[language];
 
@@ -53,8 +54,8 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ isLoading, analysisRe
       </div>
 
       <div className="py-6">
-        {activeTab === 'patient' && <PatientReport summary={analysisResult.patientSummary} language={language} />}
-        {activeTab === 'doctor' && <DoctorReport report={analysisResult.doctorReport} language={language} />}
+        {activeTab === 'patient' && <PatientReport summary={analysisResult.patientSummary} language={language} fileName={fileName} />}
+        {activeTab === 'doctor' && <DoctorReport report={analysisResult.doctorReport} language={language} fileName={fileName} />}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import type { DoctorReport as DoctorReportType, Language, PatientSummary } from '../types';
+import type { DoctorReport as DoctorReportType, Language, PatientSummary, PdfExportOptions } from '../types';
 import { translations } from '../constants';
 import { AMIRI_FONT_BASE64 } from '../lib/amiri-font';
 
@@ -57,10 +57,12 @@ const addHeaderFooter = (doc: jsPDF, language: Language, title: string) => {
     }
 };
 
-export const generateDoctorReportPDF = async (report: DoctorReportType, language: Language) => {
+export const generateDoctorReportPDF = async (report: DoctorReportType, language: Language, options: PdfExportOptions) => {
     const doc = new jsPDF();
-    const t = translations[language].doctorReport;
+    const tGlobal = translations[language];
+    const t = tGlobal.doctorReport;
     const isArabic = language === 'ar';
+    const { sections, fileName } = options;
 
     // Add Amiri font for Arabic support
     doc.addFileToVFS('Amiri-Regular.ttf', AMIRI_FONT_BASE64);
@@ -71,90 +73,122 @@ export const generateDoctorReportPDF = async (report: DoctorReportType, language
     };
 
     let yPos = headerHeight;
-
-    // --- Professional Summary ---
-    setDocFont('bold');
-    doc.setFontSize(14);
-    const summaryTitleX = isArabic ? doc.internal.pageSize.getWidth() - pageMargin : pageMargin;
-    doc.text(t.professionalSummary, summaryTitleX, yPos, { align: isArabic ? 'right' : 'left' });
-    yPos += 8;
-
-    setDocFont('normal');
-    doc.setFontSize(10);
-    const summaryText = isArabic ? report.summary_ar : report.summary_en;
+    const pageHeight = doc.internal.pageSize.getHeight();
     const usableWidth = doc.internal.pageSize.getWidth() - pageMargin * 2;
-    const splitSummary = doc.splitTextToSize(summaryText, usableWidth);
-    doc.text(splitSummary, summaryTitleX, yPos, { align: isArabic ? 'right' : 'left' });
+    const rtlAlign: { align: 'right' | 'left' } = { align: isArabic ? 'right' : 'left' };
+    const textX = isArabic ? doc.internal.pageSize.getWidth() - pageMargin : pageMargin;
     
-    // Calculate where the table should start
-    const summaryHeight = splitSummary.length * (doc.getLineHeight() / doc.internal.scaleFactor);
-    const tableStartY = yPos + summaryHeight + 5;
+    // --- Professional Summary ---
+    if (sections.professionalSummary) {
+        setDocFont('bold');
+        doc.setFontSize(14);
+        doc.text(t.professionalSummary, textX, yPos, rtlAlign);
+        yPos += 8;
+
+        setDocFont('normal');
+        doc.setFontSize(10);
+        const summaryText = isArabic ? report.summary_ar : report.summary_en;
+        
+        const splitSummary = doc.splitTextToSize(summaryText, usableWidth);
+        doc.text(splitSummary, textX, yPos, rtlAlign);
+        const summaryHeight = splitSummary.length * (doc.getLineHeight() / doc.internal.scaleFactor);
+        yPos += summaryHeight + 10;
+    }
+
 
     // --- Detailed Results Table ---
-    const tableHeaders = [
-        t.testName,
-        t.value,
-        t.unit,
-        t.referenceRange,
-        t.status,
-        t.interpretation,
-        t.possibleCauses
-    ];
+    if (sections.detailedResults) {
+        const tableHeaders = [
+            t.testName,
+            t.value,
+            t.unit,
+            t.referenceRange,
+            t.status,
+            t.interpretation,
+            t.possibleCauses
+        ];
 
-    const tableBody = report.results.map(item => [
-        item.testName,
-        item.value,
-        item.unit,
-        item.referenceRange,
-        item.status,
-        isArabic ? item.interpretation_ar : item.interpretation_en,
-        isArabic ? item.possibleCauses_ar : item.possibleCauses_en
-    ]);
+        const tableBody = report.results.map(item => [
+            item.testName,
+            item.value,
+            item.unit,
+            item.referenceRange,
+            item.status,
+            isArabic ? item.interpretation_ar : item.interpretation_en,
+            isArabic ? item.possibleCauses_ar : item.possibleCauses_en
+        ]);
 
-    autoTable(doc, {
-        head: [tableHeaders],
-        body: tableBody,
-        startY: tableStartY,
-        margin: { left: pageMargin, right: pageMargin, top: headerHeight },
-        styles: {
-            font: isArabic ? 'Amiri' : 'Helvetica',
-            fontStyle: 'normal',
-            halign: isArabic ? 'right' : 'left',
-            valign: 'middle', // Vertically center content for better appearance in tall rows
-            cellPadding: 3, // Increased padding for better readability
-        },
-        headStyles: {
-            font: isArabic ? 'Amiri' : 'Helvetica',
-            fontStyle: 'bold',
-            fillColor: [41, 128, 185],
-            textColor: 255,
-            halign: 'center',
-        },
-        alternateRowStyles: {
-            fillColor: [245, 245, 245],
-        },
-        columnStyles: {
-            0: { cellWidth: 35 }, // Test Name
-            1: { cellWidth: 15 }, // Value
-            2: { cellWidth: 15 }, // Unit
-            3: { cellWidth: 25 }, // Reference Range
-            4: { cellWidth: 20 }, // Status
-            // Let Interpretation (5) and Possible Causes (6) take up the remaining space
-            5: { cellWidth: 'auto' },
-            6: { cellWidth: 'auto' },
+        autoTable(doc, {
+            head: [tableHeaders],
+            body: tableBody,
+            startY: yPos,
+            margin: { left: pageMargin, right: pageMargin, top: headerHeight },
+            styles: {
+                font: isArabic ? 'Amiri' : 'Helvetica',
+                fontStyle: 'normal',
+                halign: isArabic ? 'right' : 'left',
+                valign: 'middle', 
+                cellPadding: 3,
+            },
+            headStyles: {
+                font: isArabic ? 'Amiri' : 'Helvetica',
+                fontStyle: 'bold',
+                fillColor: [41, 128, 185],
+                textColor: 255,
+                halign: 'center',
+            },
+            alternateRowStyles: {
+                fillColor: [245, 245, 245],
+            },
+            columnStyles: {
+                0: { cellWidth: 35 }, 
+                1: { cellWidth: 15 }, 
+                2: { cellWidth: 15 }, 
+                3: { cellWidth: 25 }, 
+                4: { cellWidth: 20 }, 
+                5: { cellWidth: 'auto' },
+                6: { cellWidth: 'auto' },
+            },
+            didDrawPage: (data) => {
+                // Update yPos after table renders a page
+                yPos = data.cursor?.y ?? headerHeight;
+            }
+        });
+    }
+
+    if (sections.disclaimer) {
+        if (yPos > pageHeight - footerHeight - 30) {
+            doc.addPage();
+            yPos = headerHeight;
         }
-    });
+        yPos += 5;
+        doc.setLineWidth(0.5);
+        doc.line(pageMargin, yPos, doc.internal.pageSize.getWidth() - pageMargin, yPos);
+        yPos += 10;
+        
+        setDocFont('bold');
+        doc.setFontSize(10);
+        doc.text(tGlobal.disclaimerTitle, textX, yPos, rtlAlign);
+        yPos += 6;
+
+        setDocFont('normal');
+        doc.setFontSize(8);
+        const disclaimerLines = doc.splitTextToSize(tGlobal.disclaimerContent, usableWidth);
+        doc.text(disclaimerLines, textX, yPos, rtlAlign);
+    }
+
 
     addHeaderFooter(doc, language, t.title);
-    doc.save(`MediReport_Doctor_View_${new Date().toISOString().split('T')[0]}.pdf`);
+    doc.save(fileName);
 };
 
 
-export const generatePatientReportPDF = async (summary: PatientSummary, language: Language) => {
+export const generatePatientReportPDF = async (summary: PatientSummary, language: Language, options: PdfExportOptions) => {
     const doc = new jsPDF();
     const t = translations[language];
     const patientT = t.patientReport;
     const isArabic = language === 'ar';
+    const { sections, fileName } = options;
 
     // Add Amiri font for Arabic support
     doc.addFileToVFS('Amiri-Regular.ttf', AMIRI_FONT_BASE64);
@@ -214,32 +248,34 @@ export const generatePatientReportPDF = async (summary: PatientSummary, language
         yPos += 10;
     };
 
-    renderSection(patientT.overallImpression, isArabic ? summary.overallImpression_ar : summary.overallImpression_en);
-    renderSection(patientT.keyFindings, isArabic ? summary.keyFindings_ar : summary.keyFindings_en);
-    renderSection(patientT.recommendations, isArabic ? summary.recommendations_ar : summary.recommendations_en);
-    renderSection(patientT.medicalAdvice, isArabic ? summary.medicalAdvice_ar : summary.medicalAdvice_en);
-    renderSection(patientT.nutritionalAdvice, isArabic ? summary.nutritionalAdvice_ar : summary.nutritionalAdvice_en);
+    if (sections.overallImpression) renderSection(patientT.overallImpression, isArabic ? summary.overallImpression_ar : summary.overallImpression_en);
+    if (sections.keyFindings) renderSection(patientT.keyFindings, isArabic ? summary.keyFindings_ar : summary.keyFindings_en);
+    if (sections.recommendations) renderSection(patientT.recommendations, isArabic ? summary.recommendations_ar : summary.recommendations_en);
+    if (sections.medicalAdvice) renderSection(patientT.medicalAdvice, isArabic ? summary.medicalAdvice_ar : summary.medicalAdvice_en);
+    if (sections.nutritionalAdvice) renderSection(patientT.nutritionalAdvice, isArabic ? summary.nutritionalAdvice_ar : summary.nutritionalAdvice_en);
     
     // --- Add Disclaimer ---
-    if (yPos > pageHeight - footerHeight - 30) {
-        doc.addPage();
-        yPos = headerHeight;
-    }
-    yPos += 5;
-    doc.setLineWidth(0.5);
-    doc.line(pageMargin, yPos, doc.internal.pageSize.getWidth() - pageMargin, yPos);
-    yPos += 10;
-    
-    setDocFont('bold');
-    doc.setFontSize(10);
-    doc.text(t.disclaimerTitle, textX, yPos, rtlAlign);
-    yPos += 6;
+    if (sections.disclaimer) {
+        if (yPos > pageHeight - footerHeight - 30) {
+            doc.addPage();
+            yPos = headerHeight;
+        }
+        yPos += 5;
+        doc.setLineWidth(0.5);
+        doc.line(pageMargin, yPos, doc.internal.pageSize.getWidth() - pageMargin, yPos);
+        yPos += 10;
+        
+        setDocFont('bold');
+        doc.setFontSize(10);
+        doc.text(t.disclaimerTitle, textX, yPos, rtlAlign);
+        yPos += 6;
 
-    setDocFont('normal');
-    doc.setFontSize(8);
-    const disclaimerLines = doc.splitTextToSize(t.disclaimerContent, usableWidth);
-    doc.text(disclaimerLines, textX, yPos, rtlAlign);
+        setDocFont('normal');
+        doc.setFontSize(8);
+        const disclaimerLines = doc.splitTextToSize(t.disclaimerContent, usableWidth);
+        doc.text(disclaimerLines, textX, yPos, rtlAlign);
+    }
 
     addHeaderFooter(doc, language, patientT.title);
-    doc.save(`MediReport_Patient_Summary_${new Date().toISOString().split('T')[0]}.pdf`);
+    doc.save(fileName);
 };

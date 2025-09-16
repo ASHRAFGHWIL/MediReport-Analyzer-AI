@@ -44,3 +44,8 @@ export interface HistoryItem {
   timestamp: string;
   fileName: string;
 }
+
+export interface PdfExportOptions {
+  sections: { [key: string]: boolean };
+  fileName: string;
+}
