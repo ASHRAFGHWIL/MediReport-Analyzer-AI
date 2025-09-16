@@ -98,7 +98,7 @@ export const generateDoctorReportPDF = async (report: DoctorReportType, language
 
     // --- Detailed Results Table ---
     if (sections.detailedResults) {
-        const tableHeaders = [
+        let tableHeaders = [
             t.testName,
             t.value,
             t.unit,
@@ -108,7 +108,7 @@ export const generateDoctorReportPDF = async (report: DoctorReportType, language
             t.possibleCauses
         ];
 
-        const tableBody = report.results.map(item => [
+        let tableBody = report.results.map(item => [
             item.testName,
             item.value,
             item.unit,
@@ -117,6 +117,33 @@ export const generateDoctorReportPDF = async (report: DoctorReportType, language
             isArabic ? item.interpretation_ar : item.interpretation_en,
             isArabic ? item.possibleCauses_ar : item.possibleCauses_en
         ]);
+
+        // Fix: Explicitly type `tableColumnStyles` to prevent TypeScript from inferring `cellWidth`
+        // as a generic `string`, which is not assignable to `jspdf-autotable`'s `CellWidthType`.
+        let tableColumnStyles: { [key: number]: { cellWidth: number | 'auto' | 'wrap' } } = {
+            0: { cellWidth: 35 }, 
+            1: { cellWidth: 15 }, 
+            2: { cellWidth: 15 }, 
+            3: { cellWidth: 25 }, 
+            4: { cellWidth: 20 }, 
+            5: { cellWidth: 'auto' },
+            6: { cellWidth: 'auto' },
+        };
+        
+        // Fix: For RTL languages, reverse the column order for correct display.
+        if (isArabic) {
+            tableHeaders.reverse();
+            tableBody.forEach(row => row.reverse());
+            tableColumnStyles = {
+                0: { cellWidth: 'auto' },      // Possible Causes
+                1: { cellWidth: 'auto' },      // Interpretation
+                2: { cellWidth: 20 },          // Status
+                3: { cellWidth: 25 },          // Reference Range
+                4: { cellWidth: 15 },          // Unit
+                5: { cellWidth: 15 },          // Value
+                6: { cellWidth: 35 },          // Test Name
+            }
+        }
 
         autoTable(doc, {
             head: [tableHeaders],
@@ -140,15 +167,7 @@ export const generateDoctorReportPDF = async (report: DoctorReportType, language
             alternateRowStyles: {
                 fillColor: [245, 245, 245],
             },
-            columnStyles: {
-                0: { cellWidth: 35 }, 
-                1: { cellWidth: 15 }, 
-                2: { cellWidth: 15 }, 
-                3: { cellWidth: 25 }, 
-                4: { cellWidth: 20 }, 
-                5: { cellWidth: 'auto' },
-                6: { cellWidth: 'auto' },
-            },
+            columnStyles: tableColumnStyles,
             didDrawPage: (data) => {
                 // Update yPos after table renders a page
                 yPos = data.cursor?.y ?? headerHeight;

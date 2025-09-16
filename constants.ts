@@ -87,7 +87,7 @@ export const translations = {
       title: "التقرير الطبي للطبيب",
       professionalSummary: "ملخص احترافي",
       detailedResults: "النتائج التفصيلية",
-      exportPdf: "تصدير كـ PDF",
+      exportPdf: "تصدير PDF",
       exportingPdf: "جاري التصدير...",
       copyToClipboard: "نسخ إلى الحافظة",
       copied: "تم النسخ!",
