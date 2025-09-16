@@ -1,0 +1,5 @@
+{
+  "name": "MediReport Analyzer AI",
+  "description": "An AI-powered application to analyze medical lab reports. Upload a report image to get a simplified patient summary and a detailed professional analysis for doctors. This tool is for informational purposes only and is not a substitute for professional medical advice.",
+  "requestFramePermissions": []
+}
