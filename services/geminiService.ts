@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import type { AnalysisResult } from '../types';
 import { GEMINI_MODEL } from '../constants';
@@ -32,9 +31,29 @@ const responseSchema = {
             type: Type.ARRAY,
             items: { type: Type.STRING },
             description: "A list of general, non-prescriptive recommendations (e.g., 'Consult a specialist') for the patient in Arabic. Must include a disclaimer to consult a doctor."
-          },
+        },
+        medicalAdvice_en: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "A list of actionable, general medical advice points based on the findings, in English. Framed as general knowledge, not a direct command."
+        },
+        medicalAdvice_ar: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "A list of actionable, general medical advice points based on the findings, in Arabic. Framed as general knowledge, not a direct command."
+        },
+        nutritionalAdvice_en: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "A list of specific nutritional and dietary advice based on the lab results, in English."
+        },
+        nutritionalAdvice_ar: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "A list of specific nutritional and dietary advice based on the lab results, in Arabic."
+        },
       },
-       required: ["overallImpression_en", "overallImpression_ar", "keyFindings_en", "keyFindings_ar", "recommendations_en", "recommendations_ar"],
+       required: ["overallImpression_en", "overallImpression_ar", "keyFindings_en", "keyFindings_ar", "recommendations_en", "recommendations_ar", "medicalAdvice_en", "medicalAdvice_ar", "nutritionalAdvice_en", "nutritionalAdvice_ar"],
     },
     doctorReport: {
       type: Type.OBJECT,
@@ -57,8 +76,10 @@ const responseSchema = {
               },
               interpretation_en: { type: Type.STRING, description: "A brief clinical interpretation of this specific result in English." },
               interpretation_ar: { type: Type.STRING, description: "A brief clinical interpretation of this specific result in Arabic." },
+              possibleCauses_en: { type: Type.STRING, description: "A brief list of possible clinical causes for an abnormal result, in English." },
+              possibleCauses_ar: { type: Type.STRING, description: "A brief list of possible clinical causes for an abnormal result, in Arabic." },
             },
-            required: ["testName", "value", "unit", "referenceRange", "status", "interpretation_en", "interpretation_ar"],
+            required: ["testName", "value", "unit", "referenceRange", "status", "interpretation_en", "interpretation_ar", "possibleCauses_en", "possibleCauses_ar"],
           },
         },
       },
@@ -82,15 +103,16 @@ export const analyzeMedicalReport = async (base64Image: string, mimeType: string
             },
           },
           {
-            text: `Analyze the attached medical report. Extract all lab tests, their values, units, and reference ranges. Provide a patient-friendly summary and a detailed doctor's report in both English and Arabic. Adhere strictly to the provided JSON schema.`,
+            text: `Analyze the attached medical report. Extract all lab tests, their values, units, and reference ranges. Provide a patient-friendly summary (including medical and nutritional advice) and a detailed doctor's report (including possible causes for abnormalities) in both English and Arabic. Adhere strictly to the provided JSON schema.`,
           },
         ],
       },
       config: {
         responseMimeType: "application/json",
         responseSchema: responseSchema,
+        // Fix: Moved systemInstruction into the config object as per Gemini API guidelines.
+        systemInstruction: "You are a specialized medical AI assistant designed to analyze and interpret lab reports from images. Your output must be a valid JSON object matching the provided schema, containing both patient and professional summaries in English and Arabic.",
       },
-      systemInstruction: "You are a specialized medical AI assistant designed to analyze and interpret lab reports from images. Your output must be a valid JSON object matching the provided schema, containing both patient and professional summaries in English and Arabic.",
     });
 
     const jsonText = response.text.trim();
@@ -103,4 +125,3 @@ export const analyzeMedicalReport = async (base64Image: string, mimeType: string
     throw new Error("Failed to get a valid analysis from the AI model.");
   }
 };
-   

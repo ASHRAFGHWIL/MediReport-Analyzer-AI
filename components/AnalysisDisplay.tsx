@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import type { AnalysisResult, Language } from '../types';
 import PatientReport from './PatientReport';
@@ -28,14 +27,14 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ isLoading, analysisRe
 
   return (
     <div className="mt-8">
-      <div className="border-b border-slate-200">
+      <div className="border-b border-slate-200 dark:border-slate-700">
         <nav className="-mb-px flex gap-6" aria-label="Tabs">
           <button
             onClick={() => setActiveTab('patient')}
             className={`shrink-0 border-b-2 px-1 pb-4 text-sm font-medium ${
               activeTab === 'patient'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:text-slate-200'
             }`}
           >
             {t.patientView}
@@ -44,8 +43,8 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ isLoading, analysisRe
             onClick={() => setActiveTab('doctor')}
             className={`shrink-0 border-b-2 px-1 pb-4 text-sm font-medium ${
               activeTab === 'doctor'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:text-slate-200'
             }`}
           >
             {t.doctorView}
@@ -62,4 +61,3 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ isLoading, analysisRe
 };
 
 export default AnalysisDisplay;
-   
