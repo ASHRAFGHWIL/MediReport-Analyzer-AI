@@ -28,7 +28,7 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ isLoading, analysisRe
 
   return (
     <div className="mt-8">
-      <div className="border-b border-slate-200 dark:border-slate-700">
+      <div className="border-b border-slate-200 dark:border-slate-700 no-print">
         <nav className="-mb-px flex gap-6" aria-label="Tabs">
           <button
             onClick={() => setActiveTab('patient')}

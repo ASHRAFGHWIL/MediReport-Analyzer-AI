@@ -146,7 +146,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900 font-sans transition-colors duration-300">
-      <header className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg sticky top-0 z-10 shadow-sm">
+      <header className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg sticky top-0 z-10 shadow-sm no-print">
         <div className="container mx-auto flex justify-between items-center p-4">
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">{t.appName}</h1>
           <div className="flex items-center gap-2">
@@ -165,21 +165,23 @@ const App: React.FC = () => {
       <main className="container mx-auto p-4 md:p-8">
         <div className="flex flex-col gap-8">
           <div className="space-y-6">
-            <FileUpload 
-              onFileUpload={handleFileUpload} 
-              isLoading={isLoading} 
-              language={language}
-              setError={setError}
-            />
+            <div className="no-print">
+              <FileUpload 
+                onFileUpload={handleFileUpload} 
+                isLoading={isLoading} 
+                language={language}
+                setError={setError}
+              />
+            </div>
             {error && (
-                <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg" role="alert">
+                <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg no-print" role="alert">
                     <p className="font-bold">Error</p>
                     <p>{error}</p>
                 </div>
             )}
             { (isLoading || analysisResult) && 
               <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
-                {currentFile && <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Showing results for: <span className="font-medium text-slate-700 dark:text-slate-200">{currentFile.name}</span></p>}
+                {currentFile && <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 no-print">Showing results for: <span className="font-medium text-slate-700 dark:text-slate-200">{currentFile.name}</span></p>}
                 <AnalysisDisplay 
                   isLoading={isLoading} 
                   analysisResult={analysisResult} 
@@ -188,10 +190,12 @@ const App: React.FC = () => {
                 />
               </div>
             }
-            <Disclaimer language={language} />
+            <div className="no-print">
+              <Disclaimer language={language} />
+            </div>
           </div>
 
-          <div>
+          <div className="no-print">
             <HistoryPanel 
               history={history}
               onSelectItem={handleSelectItemFromHistory}

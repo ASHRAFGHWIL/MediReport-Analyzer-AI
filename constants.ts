@@ -6,6 +6,7 @@ export const translations = {
     disclaimerContent: "This tool is for informational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment. Always consult with a qualified healthcare provider.",
     patientView: "Patient View",
     doctorView: "Doctor View",
+    print: "Print",
     patientReport: {
       title: "Your Health Report Summary",
       overallImpression: "Overall Impression",
@@ -75,6 +76,7 @@ export const translations = {
     disclaimerContent: "هذه الأداة هي لأغراض إعلامية فقط وليست بديلاً عن الاستشارة الطبية المتخصصة أو التشخيص أو العلاج. استشر دائمًا مقدم رعاية صحية مؤهل.",
     patientView: "عرض المريض",
     doctorView: "عرض الطبيب",
+    print: "طباعة",
     patientReport: {
       title: "ملخص تقريرك الصحي",
       overallImpression: "الانطباع العام",

@@ -30,7 +30,6 @@ export interface PatientSummary {
 export interface DoctorReport {
   summary_en: string;
   summary_ar: string;
-  // Fix: Corrected typo from Resultitem to ResultItem.
   results: ResultItem[];
 }
 

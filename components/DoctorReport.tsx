@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { DoctorReport as DoctorReportType, ResultItem, Language, PdfExportOptions } from '../types';
 import { translations } from '../constants';
 import { generateDoctorReportPDF } from '../services/pdfGenerator';
-import { PdfIcon, ClipboardIcon, CheckCircleIcon } from './IconComponents';
+import { PdfIcon, ClipboardIcon, CheckCircleIcon, PrintIcon } from './IconComponents';
 import PdfExportModal from './PdfExportModal';
 
 interface DoctorReportProps {
@@ -24,6 +24,7 @@ const DoctorReport: React.FC<DoctorReportProps> = ({ report, language, fileName 
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const t = translations[language].doctorReport;
+  const t_global = translations[language];
   const isArabic = language === 'ar';
   const statusTooltips = t.statusTooltips;
 
@@ -38,6 +39,10 @@ const DoctorReport: React.FC<DoctorReportProps> = ({ report, language, fileName 
     } finally {
         setIsGeneratingPdf(false);
     }
+  };
+  
+  const handlePrint = () => {
+    window.print();
   };
   
   const handleCopyToClipboard = async () => {
@@ -97,10 +102,17 @@ const DoctorReport: React.FC<DoctorReportProps> = ({ report, language, fileName 
             defaultFileName={defaultPdfName}
             language={language}
         />
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-6 animate-fade-in printable-area">
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t.title}</h2>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 no-print">
+                     <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 rounded-lg transition-colors"
+                    >
+                        <PrintIcon />
+                        <span>{t_global.print}</span>
+                    </button>
                     <button
                         onClick={handleCopyToClipboard}
                         disabled={isCopied}

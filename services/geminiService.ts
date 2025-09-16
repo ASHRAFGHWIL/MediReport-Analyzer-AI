@@ -107,11 +107,11 @@ export const analyzeMedicalReport = async (base64Image: string, mimeType: string
           },
         ],
       },
+      // FIX: The 'systemInstruction' property must be nested inside the 'config' object.
       config: {
+        systemInstruction: "You are a specialized medical AI assistant designed to analyze and interpret lab reports from images. Your output must be a valid JSON object matching the provided schema, containing both patient and professional summaries in English and Arabic.",
         responseMimeType: "application/json",
         responseSchema: responseSchema,
-        // Fix: Moved systemInstruction into the config object as per Gemini API guidelines.
-        systemInstruction: "You are a specialized medical AI assistant designed to analyze and interpret lab reports from images. Your output must be a valid JSON object matching the provided schema, containing both patient and professional summaries in English and Arabic.",
       },
     });
 
